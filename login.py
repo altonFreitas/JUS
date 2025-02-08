@@ -1,47 +1,24 @@
 import streamlit as st
+from utils import carregar_usuarios, gerar_hash
 
-# Função para simular um banco de dados de usuários
-usuarios = {}
+def login():
+    st.subheader("🔓 Fazer login")
+    usuario = st.text_input("👤 Nome de utilizador")
+    senha = st.text_input("🔐 Senha", type="password")
 
-def registrar_usuario(email, senha):
-    if email in usuarios:
-        return False  # Usuário já existe
-    usuarios[email] = senha
-    return True
-
-def verificar_login(email, senha):
-    if email in usuarios and usuarios[email] == senha:
-        return True  # Login válido
-    return False  # Login inválido
-
-# Interface do Streamlit
-st.title("Sistema de Login e Registro")
-
-# Menu de escolha (Login ou Registro)
-menu = st.selectbox("Escolha uma opção", ["Login", "Registro"])
-
-if menu == "Registro":
-    st.subheader("Criar nova conta")
-    email = st.text_input("Email")
-    senha = st.text_input("Senha", type="password")
-    confirmar_senha = st.text_input("Confirmar Senha", type="password")
-
-    if st.button("Registrar"):
-        if senha == confirmar_senha:
-            if registrar_usuario(email, senha):
-                st.success("Conta criada com sucesso!")
+    if st.button("Login", use_container_width=True):
+        if usuario and senha:
+            usuarios = carregar_usuarios()
+            if usuario in usuarios and usuarios[usuario] == gerar_hash(senha):
+                st.success(f"📢 Bem-vindo, {usuario}!")
+                st.session_state['usuario'] = usuario
+                st.session_state['pagina'] = 'Dashboard'
+                st.experimental_rerun() 
             else:
-                st.error("Este email já está registrado.")
+                st.error("🔒 Utilizador ou senha incorretos.")
         else:
-            st.error("As senhas não coincidem.")
+            st.error("🔒 Por favor, preencha todos os campos.")
 
-elif menu == "Login":
-    st.subheader("Faça login")
-    email = st.text_input("Email")
-    senha = st.text_input("Senha", type="password")
-
-    if st.button("Login"):
-        if verificar_login(email, senha):
-            st.success(f"Bem-vindo, {email}!")
-        else:
-            st.error("Email ou senha incorretos.")
+    if st.button("Registrar conta", use_container_width=True):
+        st.session_state['pagina'] = 'Registrar'
+        st.experimental_rerun() 
